@@ -1,0 +1,1 @@
+DROP INDEX `subcategory_name_unique`;
