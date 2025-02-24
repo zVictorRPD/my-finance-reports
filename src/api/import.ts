@@ -46,6 +46,11 @@ export async function ImportData(
         category: string;
         subcategory: string;
     }[];
+    const subcategoriesInserteds = [] as {
+        id: number;
+        name: string | null;
+        categoryId: number | null;
+    }[];
 
     if (type === "revenue") {
         formattedData.forEach((revenue) => {
@@ -103,7 +108,7 @@ export async function ImportData(
 
             revenues.push({
                 description,
-                value: parseInt(value) * 100,
+                value: Number(value) * 100,
                 release: maskDateWithoutHours(release),
                 dueDate: maskDateWithoutHours(dueDate),
                 effectiveDate: maskDateWithoutHours(effectiveDate),
@@ -180,7 +185,7 @@ export async function ImportData(
 
             expenses.push({
                 description,
-                value: parseInt(value) * 100,
+                value: Number(value) * 100,
                 charges: parseInt(charges),
                 release: maskDateWithHours(release),
                 dueDate: maskDateWithoutHours(dueDate),
@@ -271,13 +276,17 @@ export async function ImportData(
             .filter((value) => value !== false);
 
         if (subcategoriesToInsert.length !== 0) {
-            const subcategoriesInserteds = await tx
+            const subcatInserteds = await tx
                 .insert(subcategory)
                 .values(subcategoriesToInsert)
                 .returning();
 
-            counter.subcategories = subcategoriesInserteds.length;
+            counter.subcategories = subcatInserteds.length;
+
+            subcategoriesInserteds.push(...subcatInserteds);
         }
+
+        const allSubcategories = [...savedSubcategories, ...subcategoriesInserteds];
 
         if (type === "revenue") {
             const completedRevenues = revenues.map((revenue) => ({
@@ -285,7 +294,7 @@ export async function ImportData(
                 categoryId: savedCategories.find(
                     (category) => category.name === revenue.category
                 )?.id,
-                subcategoryId: savedSubcategories.find(
+                subcategoryId: allSubcategories.find(
                     (subcategory) => subcategory.name === revenue.subcategory
                 )?.id,
                 accountId: savedAccounts.find(
@@ -309,7 +318,7 @@ export async function ImportData(
                 categoryId: savedCategories.find(
                     (category) => category.name === expense.category
                 )?.id,
-                subcategoryId: savedSubcategories.find(
+                subcategoryId: allSubcategories.find(
                     (subcategory) => subcategory.name === expense.subcategory
                 )?.id,
                 accountId: savedAccounts.find(

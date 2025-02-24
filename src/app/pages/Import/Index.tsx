@@ -62,8 +62,6 @@ export function ImportPage() {
                 }));
 
             } catch (error) {
-                console.log(error);
-
                 toast.error("Erro ao importar arquivo");
             }
 
