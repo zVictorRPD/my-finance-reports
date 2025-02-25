@@ -6,14 +6,14 @@ import { IExpense } from "@/utils/interfaces/expense";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multiple-select";
-import { ICategory, ISubcategory } from "@/utils/interfaces/category";
+import { ICategory } from "@/utils/interfaces/category";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { getCategories, getSubcategories } from "@/api/categories";
+import { getCategories } from "@/api/categories";
 import { ptBR } from "date-fns/locale/pt-BR";
 
 export function ExpensesPage() {
@@ -21,7 +21,6 @@ export function ExpensesPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [expenses, setExpenses] = useState<IExpense[]>([]);
     const [categories, setCategories] = useState<ICategory[]>([]);
-    const [subcategories, setSubcategories] = useState<ISubcategory[]>([]);
     const [summary, setSummary] = useState({
         total: 0,
         count: 0,
@@ -29,17 +28,8 @@ export function ExpensesPage() {
 
     async function handleGetCategories() {
         try {
-            const categories = await getCategories();
+            const categories = await getCategories("expense");
             setCategories(categories);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    async function handleGetSubcategories() {
-        try {
-            const subcategories = await getSubcategories();
-            setSubcategories(subcategories);
         } catch (error) {
             console.error(error);
         }
@@ -63,8 +53,6 @@ export function ExpensesPage() {
 
     useEffect(() => {
         handleGetCategories();
-        handleGetSubcategories();
-        handleGetExpenses();
     }, []);
 
     return (
@@ -161,27 +149,13 @@ export function ExpensesPage() {
                         maxCount={99}
                     />
                 </div>
-                {/* <div className="col-span-1 flex flex-col gap-1.5">
-                    <Label htmlFor="description">Subcategoria</Label>
-                    <MultiSelect
-                        options={
-                            subcategories
-                                .filter((subcategory) => filter.categories?.includes(String(subcategory.categoryId)))
-                                .map((subcategory) => {
-                                    return {
-                                        label: subcategory.name || "",
-                                        value: String(subcategory.id),
-                                    }
-                                })
-                        }
-                        onValueChange={(values) => setFilter({ ...filter, categories: values })}
-                        defaultValue={filter.subcategories}
-                        placeholder="Select frameworks"
-                        variant="inverted"
-                        animation={2}
-                        maxCount={3}
-                    />
-                </div> */}
+                <div className="col-span-1 flex items-end">
+                    <Button
+                        onClick={handleGetExpenses}
+                    >
+                        Filtrar
+                    </Button>
+                </div>
             </div>
             <DataTable
                 columns={columns}

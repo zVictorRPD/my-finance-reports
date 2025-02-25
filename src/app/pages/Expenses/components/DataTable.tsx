@@ -3,6 +3,8 @@ import {
     flexRender,
     getCoreRowModel,
     useReactTable,
+    SortingState,
+    getSortedRowModel,
 } from "@tanstack/react-table"
 
 import {
@@ -14,6 +16,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Loader2Icon } from "lucide-react"
+import { useState } from "react"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -26,10 +29,17 @@ export function DataTable<TData, TValue>({
     data,
     isLoading,
 }: DataTableProps<TData, TValue>) {
+    const [sorting, setSorting] = useState<SortingState>([])
+
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
+        onSortingChange: setSorting,
+        getSortedRowModel: getSortedRowModel(),
+        state: {
+            sorting,
+        }
     })
 
     return (
